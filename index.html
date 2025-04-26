@@ -73,48 +73,55 @@
       z-index: -1;
     }
 
-    .menu-button {
-      position: absolute;
-      background: rgba(255, 0, 0, 0.3); /* Semi-transparent red for visibility */
-      border: 2px dashed white; /* White dashed border for visibility */
-      cursor: pointer;
-      z-index: 11;
-      transition: background 0.3s;
-    }
+/* Remove background/border for final version */
+.menu-button {
+   position: absolute;
+   /* --- Add color back --- */
+   background: rgba(255, 0, 0, 0.4); /* Semi-transparent red (Adjust 0.4 for more/less transparency) */
+   border: 1px solid white;       /* Optional: Add a thin white border */
+   /* --- Keep other styles --- */
+   cursor: pointer;
+   z-index: 11;
+   transition: background 0.3s;
+   padding: 0;
+   margin: 0;
+   overflow: hidden;
+   text-indent: -9999px;
+ }
 
-    .menu-button:hover {
-      background: rgba(0, 255, 0, 0.3); /* Change to green on hover for visibility */
-    }
+ /* Optional: Change hover effect slightly */
+ .menu-button:hover {
+    background: rgba(0, 255, 0, 0.5); /* Semi-transparent green on hover */
+ }
 
-    /* Precise button positioning */
-    #start-btn {
-      width: 40%;
-      height: 8%;
-      top: 30%;
-      left: 30%;
-    }
+ /* --- Keep the specific ID styles for positioning --- */
+ #start-btn { /* Red Arrow */
+   width: 40%;
+   height: 45%;
+   top: 2%;
+   left: 1%;
+ }
 
-    #help-btn {
-      width: 40%;
-      height: 8%;
-      top: 40%;
-      left: 30%;
-    }
+ #help-btn { /* EMERGENCY Sign */
+   width: 17%;
+   height: 12%;
+   top: 28%;
+   left: 41%;
+ }
 
-    #leaderboard-btn {
-      width: 40%;
-      height: 8%;
-      top: 50%;
-      left: 30%;
-    }
+ #leaderboard-btn { /* HOSPITAL Sign */
+   width: 33%;
+   height: 16%;
+   top: 7%;
+   left: 58%;
+ }
 
-    #exit-btn {
-      width: 40%;
-      height: 8%;
-      top: 60%;
-      left: 30%;
-    }
-
+ #exit-btn { /* MOTHERED SO HARD Text */
+   width: 28%;
+   height: 18%;
+   top: 75%;
+   left: 68%;
+ }
     .home-button {
       position: absolute;
       top: 2vw;
@@ -1054,9 +1061,33 @@
       }
     }
 
-    // Initialize button positions
-    window.addEventListener('load', windowResized);
-    window.addEventListener('resize', windowResized);
+// Add this function back into your <script>
+  function windowResized() {
+   // Resize the p5.js canvas to the new window dimensions
+   resizeCanvas(windowWidth, windowHeight);
+
+   // Recalculate positions that depend on canvas height/width
+   // (Taken from your original code - adjust if needed)
+   babyStartY = height / 2 + 50;
+   babyTargetY = height / 2 - 50;
+   if (babyDelivered) {
+     babyY = babyTargetY; // Keep baby at target if delivered
+   } else {
+      // Only reset babyY if the game hasn't started or baby isn't out yet.
+      // If the game is in progress but baby not delivered, might want to lerp instead
+      // or just let it be. Resetting might look jarring mid-game.
+      // For simplicity, we'll reset it like the original:
+      if (!started || !babyDelivered) {
+          babyY = babyStartY;
+      }
+   }
+    // Note: You don't need to adjust the HTML button positions here,
+    // CSS handles those automatically now.
+ }
+
+ // Add these lines back at the very end of your <script>
+ window.addEventListener('load', windowResized); // Call once on load to set initial size correctly
+ window.addEventListener('resize', windowResized); // Call whenever the window is resized
   </script>
 </body>
 </html>
