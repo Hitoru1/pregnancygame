@@ -73,13 +73,12 @@
       z-index: -1;
     }
 
-/* Remove background/border for final version */
-.menu-button {
+    .menu-button {
    position: absolute;
-   /* --- Add color back --- */
-   background: rgba(255, 0, 0, 0.4); /* Semi-transparent red (Adjust 0.4 for more/less transparency) */
-   border: 1px solid white;       /* Optional: Add a thin white border */
-   /* --- Keep other styles --- */
+   
+   background: transparent; 
+   border: none;           
+   
    cursor: pointer;
    z-index: 11;
    transition: background 0.3s;
@@ -89,34 +88,38 @@
    text-indent: -9999px;
  }
 
- /* Optional: Change hover effect slightly */
+ 
  .menu-button:hover {
-    background: rgba(0, 255, 0, 0.5); /* Semi-transparent green on hover */
+   
+    background: transparent;
+
+   
+   background: rgba(255, 255, 255, 0.1); 
  }
 
- /* --- Keep the specific ID styles for positioning --- */
- #start-btn { /* Red Arrow */
+ 
+ #start-btn { 
    width: 40%;
    height: 45%;
    top: 2%;
    left: 1%;
  }
 
- #help-btn { /* EMERGENCY Sign */
+ #help-btn { 
    width: 17%;
    height: 12%;
    top: 28%;
    left: 41%;
  }
 
- #leaderboard-btn { /* HOSPITAL Sign */
+ #leaderboard-btn { 
    width: 33%;
    height: 16%;
    top: 7%;
    left: 58%;
  }
 
- #exit-btn { /* MOTHERED SO HARD Text */
+ #exit-btn { 
    width: 28%;
    height: 18%;
    top: 75%;
