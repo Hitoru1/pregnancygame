@@ -851,7 +851,7 @@ let blanketHeight = blanketWidth * (blanketImg.height/blanketImg.width);
 
       document.getElementById('start-screen').style.display = 'none';
 
-      playIntroMusic();
+      
 
       setTimeout(() => {
         document.getElementById('home-btn').style.display = 'block';
@@ -1068,6 +1068,16 @@ function closeLeaderboard() {
  // Add these lines back at the very end of your <script>
  window.addEventListener('load', windowResized); // Call once on load to set initial size correctly
  window.addEventListener('resize', windowResized); // Call whenever the window is resized
+
+ function handleFirstInteraction() {
+  playIntroMusic();
+  window.removeEventListener('click', handleFirstInteraction);
+  window.removeEventListener('touchstart', handleFirstInteraction);
+}
+
+window.addEventListener('click', handleFirstInteraction);
+window.addEventListener('touchstart', handleFirstInteraction);
+
   </script>
 </body>
 </html>
