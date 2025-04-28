@@ -134,7 +134,7 @@
       background-color:#6ab8d3;
       color: white;
       font-size: 4vw;
-      padding: 1.5vw 3vw;
+      padding:.4vw 3vw;
       border-radius: 15px;
       border: none;
       box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
@@ -522,13 +522,11 @@
     let mic, started = false;
     let screamPower = 0, screamGoal = 10, babyDelivered = false;
     let babyY = 320, babyRiseSpeed = 1.5;
-    let doctorBlinkTimer = 0, doctorEyesClosed = false;
+   
     let bgMusic, introMusic;
     let confettiPlayed = false;
     let playerName = "";
     let congratsShown = false;
-    let momMouthOpen = false;
-    let momMouthTimer = 0;
     let babyBounce = 0;
     let babyBounceDirection = 1;
     let lastVolume = 0;
@@ -538,38 +536,41 @@
     let legSpread = 0;
     let gameStartTime = 0;
     let gameEndTime = 0;
-
-    
+    let rightLegImg, leftLegImg, tummyImg, blanketImg, babyImg, bgImg;
+    let cryingBabySound;
     
     function preload() {
-      soundFormats('mp3', 'ogg');
-      bgMusic = loadSound('background.mp3', () => {}, () => {});
-      introMusic = loadSound('bgsong_before_maingame.mp3', () => {}, () => {});
-    }
+  soundFormats('mp3', 'ogg');
+  bgMusic = loadSound('background.mp3', () => {}, () => {});
+  introMusic = loadSound('bgsong_before_maingame.mp3', () => {}, () => {});
+  cryingBabySound = loadSound('crying_baby.mp3', () => {}, () => {});
+  // Load all images
+  rightLegImg = loadImage('right leg.png');
+  leftLegImg = loadImage('left leg.png');
+  tummyImg = loadImage('tummy.png');
+  blanketImg = loadImage('blanket.png');
+  babyImg = loadImage('baby.png');
+  bgImg = loadImage('bg_main_game.png');
+}
 
-    function setup() {
-      // Create canvas that fits the window but maintains aspect ratio
-      let canvas = createCanvas(windowWidth, windowHeight);
-      canvas.style('display', 'block');
-      textAlign(CENTER, CENTER);
-      textSize(22);
-      
-      document.getElementById('name-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          startGame();
-        }
-      });
-      
-      babyStartY = height * 0.75 + 50;
-      babyTargetY = height / 2;
-      babyY = babyStartY;
-      
-      // Adjust button positions initially
-      adjustButtonPositions();
-      
-      // Force landscape orientation on mobile devices
-      lockOrientation();
-    }
+function setup() {
+  let canvas = createCanvas(windowWidth, windowHeight);
+  canvas.style('display', 'block');
+  textAlign(CENTER, CENTER);                      
+  textSize(22);
+  
+  document.getElementById('name-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') startGame();
+  });
+  
+  // Set initial baby positions based on image sizes
+  babyStartY = height * 0.75; // Start at 75% down screen
+  babyTargetY = height * 0.4;  // Rise to 40% of screen
+  babyY = babyStartY;
+  
+  adjustButtonPositions();
+  lockOrientation();
+}
 
     function lockOrientation() {
       // Try to lock the screen orientation to landscape
@@ -587,264 +588,175 @@
     }
 
     function draw() {
-      background('#d5f2f9');
-      if (!started) return;
+  // Draw background image
+  image(bgImg, 0, 0, width, height);
+  
+  if (!started) return;
 
-      let vol = mic.getLevel();
-      let threshold = 0.2;
+  let vol = mic.getLevel();
+  let threshold = 0.2;
+  vol = lerp(lastVolume, vol, 0.2);
+  lastVolume = vol;
 
-      // Smooth volume changes
-      vol = lerp(lastVolume, vol, 0.2);
-      lastVolume = vol;
+  if (!babyDelivered && vol > threshold) {
+    screamPower += vol * 0.3;
+    screamPower = constrain(screamPower, 0, screamGoal);
+    legSpread = map(screamPower, 0, screamGoal, 0, 60);
+    
+    // Make baby rise based on screamPower (even before delivery)
+    babyY = lerp(babyStartY, babyTargetY, screamPower/screamGoal);
+  } else if (!babyDelivered) {
+    legSpread = lerp(legSpread, 0, 0.05);
+    // If not shouting, baby slowly goes back down
+    babyY = lerp(babyY, babyStartY, 0.05);
+  }
 
-      if (!babyDelivered && vol > threshold) {
-        // Make the game harder by requiring louder screams
-        screamPower += vol * 0.3; // Reduced from 0.5 to make it harder
-        screamPower = constrain(screamPower, 0, screamGoal);
-        
-        momMouthOpen = true;
-        momMouthTimer = 0;
-        legSpread = map(screamPower, 0, screamGoal, 0, 60);
-      } else {
-        momMouthTimer++;
-        if (momMouthTimer > 10) {
-          momMouthOpen = false;
-        }
-        legSpread = lerp(legSpread, 0, 0.05);
-      }
+  // Draw UI elements (keep these)
+  fill(0);
+  textSize(windowWidth > windowHeight ? 18 : 14);
+  text(`Volume: ${vol.toFixed(2)}`, width / 2, 30);
+  
+  // Progress bar
+  noStroke();
+  fill('#8ac9db');
+  rect(width / 2 - 100, 60, (screamPower / screamGoal) * 200, 20, 10);
+  stroke(0);
+  noFill();
+  rect(width / 2 - 100, 60, 200, 20, 10);
 
-      // UI Elements
-      fill(0);
-      textSize(windowWidth > windowHeight ? 18 : 14);
-      text(`Volume: ${vol.toFixed(2)}`, width / 2, 30);
+  if (started && !babyDelivered) {
+  // Calculate time components
+  const elapsed = millis() - gameStartTime;
+  const seconds = Math.floor(elapsed / 1000) % 60;
+  const minutes = Math.floor(elapsed / (1000 * 60)) % 60;
+  const hours = Math.floor(elapsed / (1000 * 60 * 60));
+  
+  // Format as 00:00:00
+  const formattedTime = [
+    hours.toString().padStart(2, '0'),
+    minutes.toString().padStart(2, '0'), 
+    seconds.toString().padStart(2, '0')
+  ].join(':');
 
-      // Progress bar
-      noStroke();
-      fill('#8ac9db');
-      rect(width / 2 - 100, 60, (screamPower / screamGoal) * 200, 20, 10);
-      stroke(0);
-      noFill();
-      rect(width / 2 - 100, 60, 200, 20, 10);
+  const timerY = 58; // Main timer position (was 30)
+  const shadowY = 58; // Shadow position (was 32)
 
-      // Timer display
-      if (started && !babyDelivered) {
-        fill(0);
-        textSize(windowWidth > windowHeight ? 18 : 14);
-        text(`Time: ${((millis() - gameStartTime)/1000).toFixed(1)}s`, width / 2, height - 30);
-      }
+  // Stylish text display
+  fill(255); // White text
+  stroke(0); // Black outline
+  strokeWeight(2); // Thicker outline
+  textSize(windowWidth > windowHeight ? 24 : 20); // Slightly larger
+  textFont('Comic Neue'); // Use your loaded font
+  textAlign(CENTER, TOP); // Center horizontally, align to top
+  
+  // Draw text shadow
+  fill(0, 0, 0, 100); // 100/255 opacity (~40%)
+  noStroke();
+  text(formattedTime, width/2 + 2, shadowY);
+  
+  // Draw main text (semi-transparent blue)
+  fill(30, 144, 255, 130); // DodgerBlue with 200/255 opacity (~80%)
+  text(formattedTime, width/2, timerY);
+  
+  // Reset styles
+  noStroke();
+}
 
-      // Draw characters - now centered vertically
-      drawMomBody(screamPower);
-      drawDoctor();
+  let legWidth = width * 0.5;
+  let legHeight = legWidth * (leftLegImg.height/leftLegImg.width);
+  
+  let tummyWidth = width * 0.8;
+  let tummyHeight = tummyWidth * (tummyImg.height/tummyImg.width);
+  
+  let babyWidth = width * 0.2;
+  let babyHeight = babyWidth * (babyImg.height/babyImg.width);
 
-      // Baby delivery logic
-      if (screamPower >= screamGoal) {
-        babyDelivered = true;
-        gameEndTime = millis();
-        babyProgress = min(babyProgress + 0.01, 1);
-        babyY = lerp(babyStartY, babyTargetY, babyProgress);
-        
-        if (babyProgress >= 1) {
-          babyBounce += 0.1 * babyBounceDirection;
-          if (abs(babyBounce) > 5) {
-            babyBounceDirection *= -1;
-          }
-        }
-      }
+  
+  // If keeping blanket, add this before drawing legs/tummy:
+let blanketWidth = width * 1.4;
+let blanketHeight = blanketWidth * (blanketImg.height/blanketImg.width);
 
-      // Draw baby and handle completion
-      if (babyDelivered) {
-        drawBaby(babyY + babyBounce);
-        if (!confettiPlayed && babyProgress > 0.5) {
-          launchConfetti();
-          confettiPlayed = true;
-        }
+  
+  
+  // Draw legs with spread effect
+  image(leftLegImg, 
+       width/2 - legWidth - legSpread/2, 
+       height/1 - legHeight/1, 
+       legWidth, 
+       legHeight);
+  
+        image(rightLegImg, 
+        width/2 + legSpread/2, 
+        height/1 - legHeight/1, 
+        legWidth, 
+        legHeight);
 
-        if (!congratsShown && babyProgress >= 1) {
-          showCongratsPopup();
-          congratsShown = true;
-        }
-      } else {
-        fill(0);
-        textSize(windowWidth > windowHeight ? 20 : 16);
-        text("SCREAM LOUDER TO DELIVER THE BABY!", width / 2, height - 60);
-      }
+        image(babyImg, 
+       width/2 - babyWidth/2, 
+       babyY + babyBounce, 
+       babyWidth, 
+       babyHeight);
 
-      // Doctor blinking
-      doctorBlinkTimer++;
-      if (doctorBlinkTimer % 120 === 0) {
-        doctorEyesClosed = true;
-      }
-      if (doctorBlinkTimer % 125 === 0) {
-        doctorEyesClosed = false;
-      }
+  // Draw tummy
+  image(tummyImg, 
+       width/2 - tummyWidth/2, 
+       height/1 - tummyHeight/1, 
+       tummyWidth, 
+       tummyHeight);
+
+  // Draw blanket (static position)
+  image(blanketImg, 
+     width/2 - blanketWidth/2, 
+     height/2 - blanketHeight/2, 
+     blanketWidth, 
+     blanketHeight);
+
+  // Baby delivery logic
+  if (screamPower >= screamGoal) {
+    babyDelivered = true;
+    gameEndTime = millis();
+    babyProgress = min(babyProgress + 0.01, 1);
+    babyY = lerp(babyStartY, babyTargetY, babyProgress);
+    
+    if (babyProgress >= 1) {
+      babyBounce += 0.1 * babyBounceDirection;
+      if (abs(babyBounce) > 5) babyBounceDirection *= -1;
+    }
+  }
+
+  // Draw baby if delivered
+  if (babyDelivered) {
+    image(babyImg, 
+         width/2 - babyWidth/2, 
+         babyY + babyBounce, 
+         babyWidth, 
+         babyHeight);
+    
+    if (!confettiPlayed && babyProgress > 0.5) {
+      launchConfetti();
+      confettiPlayed = true;
     }
 
-    function drawDoctor() {
-      // Position doctor centered at bottom with gap
-      let doctorX = width / 2;
-      let doctorY = height / 2 + 100 + legSpread * 0.5;
-      
-      // Body
-      fill('#6c757d');
-      rect(doctorX - 30, doctorY - 60, 60, 80, 10);
-      
-      // Head
-      fill('#ffe5b4');
-      ellipse(doctorX, doctorY - 80, 50, 50);
-      
-      // Hair
-      fill('#333');
-      arc(doctorX, doctorY - 95, 50, 30, PI, TWO_PI);
-      
-      // Eyes
-      fill(0);
-      if (doctorEyesClosed) {
-        line(doctorX - 10, doctorY - 84, doctorX - 5, doctorY - 84);
-        line(doctorX + 5, doctorY - 84, doctorX + 10, doctorY - 84);
-      } else {
-        ellipse(doctorX - 10, doctorY - 84, 6, 8);
-        ellipse(doctorX + 10, doctorY - 84, 6, 8);
-      }
-      
-      // Mouth
-      noFill();
-      stroke(0);
-      strokeWeight(1);
-      arc(doctorX, doctorY - 70, 20, 10, 0, PI);
-      noStroke();
-      
-      // Mask
-      fill(255);
-      rect(doctorX - 20, doctorY - 90, 40, 20, 5);
-      
-      // Stethoscope
-      fill('#333');
-      ellipse(doctorX - 15, doctorY - 60, 10, 10);
-      line(doctorX - 15, doctorY - 60, doctorX - 5, doctorY - 50);
-      ellipse(doctorX - 5, doctorY - 50, 8, 8);
-      
-      // Hands (positioned to sides to create gap)
-      fill('#ffe5b4');
-      ellipse(doctorX - 40 - legSpread * 0.5, doctorY - 30, 25, 20);
-      ellipse(doctorX + 40 + legSpread * 0.5, doctorY - 30, 25, 20);
+    if (!congratsShown && babyProgress >= 1) {
+      showCongratsPopup();
+      congratsShown = true;
     }
+    if (cryingBabySound && !cryingBabySound.isPlaying()) {
+    cryingBabySound.play();
+    cryingBabySound.setVolume(0.5); // Adjust volume as needed
+  }
+  } else {
+    fill(0);
+    textSize(windowWidth > windowHeight ? 20 : 16);
+    
+  }
+}
 
-    function drawMomBody(power) {
-      // Head - centered vertically
-      fill('#ffe5b4');
-      ellipse(width / 2, height / 2 - 100, 60, 60);
-      
-      // Hair
-      fill('#654321');
-      arc(width / 2, height / 2 - 115, 70, 40, PI, TWO_PI);
-      
-      // Eyes
-      fill(0);
-      line(width / 2 - 15, height / 2 - 105, width / 2 - 8, height / 2 - 105);
-      line(width / 2 + 8, height / 2 - 105, width / 2 + 15, height / 2 - 105);
-      
-      // Mouth
-      if (momMouthOpen) {
-        fill('#ff6f61');
-        ellipse(width / 2, height / 2 - 85, 25, 15);
-      } else {
-        noFill();
-        stroke(0);
-        strokeWeight(2);
-        line(width / 2 - 10, height / 2 - 85, width / 2 + 10, height / 2 - 85);
-        noStroke();
-      }
-      
-      // Body with gap in middle
-      fill('#b0e0e6');
-      beginShape();
-      vertex(width / 2 - 50, height / 2 - 70);
-      vertex(width / 2 - 60, height / 2 - 20);
-      vertex(width / 2 - 40 - legSpread, height / 2);
-      vertex(width / 2 - 20 - legSpread/2, height / 2);
-      vertex(width / 2 - 20 - legSpread/2, height / 2 + 20);
-      vertex(width / 2 + 20 + legSpread/2, height / 2 + 20);
-      vertex(width / 2 + 20 + legSpread/2, height / 2);
-      vertex(width / 2 + 40 + legSpread, height / 2);
-      vertex(width / 2 + 60, height / 2 - 20);
-      vertex(width / 2 + 50, height / 2 - 70);
-      endShape(CLOSE);
-      
-      // Arms
-      fill('#ffe5b4');
-      let armSpread = map(power, 0, screamGoal, 10, 80);
-      ellipse(width / 2 - 50 - armSpread/2, height / 2 - 50, 30, 15);
-      ellipse(width / 2 + 50 + armSpread/2, height / 2 - 50, 30, 15);
-      
-      // Legs
-      fill('#ffe5b4');
-      // Left leg
-      beginShape();
-      vertex(width / 2 - 40 - legSpread, height / 2);
-      vertex(width / 2 - 30 - legSpread, height / 2 + 30);
-      vertex(width / 2 - 20 - legSpread, height / 2 + 30);
-      vertex(width / 2 - 30 - legSpread, height / 2);
-      endShape(CLOSE);
-      
-      // Right leg
-      beginShape();
-      vertex(width / 2 + 20 + legSpread, height / 2);
-      vertex(width / 2 + 30 + legSpread, height / 2 + 30);
-      vertex(width / 2 + 40 + legSpread, height / 2 + 30);
-      vertex(width / 2 + 30 + legSpread, height / 2);
-      endShape(CLOSE);
-    }
+    
 
-    function drawBaby(y) {
-      // Body - positioned in the gap between legs
-      fill('#ffe066');
-      ellipse(width / 2, y, 40, 40);
-      
-      // Eyes
-      fill(0);
-      ellipse(width / 2 - 8, y - 5, 5, 5);
-      ellipse(width / 2 + 8, y - 5, 5, 5);
-      
-      // Mouth
-      noFill();
-      stroke(0);
-      strokeWeight(1);
-      if (babyDelivered && babyProgress > 0.5) {
-        arc(width / 2, y + 6, 12, 8, 0, PI);
-      } else {
-        line(width / 2 - 5, y + 6, width / 2 + 5, y + 6);
-      }
-      noStroke();
-      
-      // Arms
-      fill('#ffe066');
-      if (babyDelivered && babyProgress > 0.5) {
-        let armAngle = sin(frameCount * 0.1) * 0.2;
-        push();
-        translate(width / 2 - 15, y - 5);
-        rotate(armAngle);
-        ellipse(0, 0, 15, 5);
-        pop();
-        
-        push();
-        translate(width / 2 + 15, y - 5);
-        rotate(-armAngle);
-        ellipse(0, 0, 15, 5);
-        pop();
-      } else {
-        ellipse(width / 2 - 15, y - 5, 15, 5);
-        ellipse(width / 2 + 15, y - 5, 15, 5);
-      }
-      
-      // Umbilical cord
-      if (babyProgress < 0.9) {
-        stroke('#8b4513');
-        strokeWeight(2);
-        line(width / 2, y + 20, width / 2, height / 2);
-        noStroke();
-      }
-    }
+    
+
+    
 
     function launchConfetti() {
       confetti({
@@ -869,13 +781,19 @@
     }
 
     function showCongratsPopup() {
-      const timeTaken = ((gameEndTime - gameStartTime)/1000).toFixed(1);
-      const message = playerName ? 
-        `Congratulations ${playerName}! You delivered the baby in ${timeTaken} seconds!` : 
-        `Congratulations! You delivered the baby in ${timeTaken} seconds!`;
-      document.getElementById('congrats-message').textContent = message;
-      document.getElementById('congrats-popup').style.display = 'flex';
-    }
+  // Set a delay of 2 seconds (2000ms) before showing the popup
+  setTimeout(() => {
+    const timeTaken = ((gameEndTime - gameStartTime)/1000).toFixed(1);
+    const message = playerName ? 
+      `Congratulations ${playerName}! You delivered the baby in ${timeTaken} seconds!` : 
+      `Congratulations! You delivered the baby in ${timeTaken} seconds!`;
+    document.getElementById('congrats-message').textContent = message;
+    document.getElementById('congrats-popup').style.display = 'flex';
+    
+    // Add animation to the popup when it appears
+    document.getElementById('congrats-popup').style.animation = 'bounceIn 0.5s';
+  }, 2000); // 2000 milliseconds = 2 seconds
+}
 
     function closeCongratsPopup() {
       document.getElementById('congrats-popup').style.display = 'none';
@@ -947,6 +865,11 @@
       confettiPlayed = false;
       congratsShown = false;
       playerName = "";
+      
+      if (cryingBabySound && cryingBabySound.isPlaying()) {
+    cryingBabySound.stop();
+  }
+      
       document.getElementById('congrats-popup').style.display = 'none';
       document.getElementById('start-screen').style.display = 'flex';
       document.getElementById('home-btn').style.display = 'none';
