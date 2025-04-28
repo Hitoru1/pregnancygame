@@ -129,33 +129,55 @@
  }
 
  #mute-btn {
-    height: 30px;
-    width: 30px;
+    height: 30px; /* Or use vw/vh/vmin if you want the button itself to scale */
+    width: 30px;  /* Or use vw/vh/vmin */
+    /* Keep other styles: background, position, border, color, cursor */
     background: transparent;
     position: absolute;
-    top: 4%;
-    left: 95%;
+    top: 4%;  /* Consider using vh or % more consistently if needed */
+    left: 95%; /* Consider using vw or % more consistently if needed */
     border: none;
     color: white;
     cursor: pointer;
+    overflow: hidden; /* Add overflow hidden to contain the pseudo-element */
  }
 
  #mute-btn::before {
   content: '';
   display: block;
-  width: 100%;
-  height: 3px;
-  background: transparent;
-  transform: rotate(45deg);
   position: absolute;
-  top: 50%;
-  left: 0;
+  /* --- Responsive Changes --- */
+  width: 120%;      /* Make slightly wider than button to ensure full slash */
+  height: 10%;      /* Make height relative to button height (e.g., 10% of 30px = 3px) */
+  top: 45%;         /* Adjust top offset for vertical centering (50% - height/2) */
+  left: -10%;       /* Adjust left offset for horizontal centering */
+  /* --- End Responsive Changes --- */
+  background: transparent; /* Default state: line is transparent */
+  transform: rotate(45deg);
+  transform-origin: center center; /* Ensure rotation happens around the center */
   pointer-events: none;
+  transition: background-color 0.2s ease; /* Optional: smooth transition */
 }
 
 #mute-btn.muted::before {
-  background: red;
+  background: red; /* Make the line red when muted */
 }
+
+/* Optional: If you want the button itself to scale with viewport */
+/*
+ #mute-btn {
+    height: 5vmin;
+    width: 5vmin;
+    position: absolute;
+    top: 2vh;
+    right: 2vw;  // Changed from left to right for potentially better placement
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    overflow: hidden;
+ }
+ */
 
     .home-button {
       position: absolute;
