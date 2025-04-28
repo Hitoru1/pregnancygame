@@ -382,43 +382,43 @@
     }
 
     /* Help Screen */
-    #help-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      text-align: center;
-      padding: 15px;
-    }
+    .help-screen {
+    display: none; /* Hidden initially */
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.3s ease-out;
+    pointer-events: none;
+  }
 
-    #help-screen h2 {
-      font-size: 1.8rem;
-      margin-bottom: 15px;
-    }
+  #help-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease-out 0.1s;
+    transform: translateY(20px);
+  }
 
-    #help-screen p {
-      font-size: 1.1rem;
-      margin-bottom: 25px;
-      max-width: 90%;
-    }
-
-    #close-help {
-      background-color: #6ab8d3;
-      border: none;
-      padding: 10px 20px;
-      font-size: 1.1rem;
-      color: white;
-      border-radius: 10px;
-      cursor: pointer;
-    }
+  #close-help {
+    height: 40px;
+    width: 40px;
+    position: absolute;
+    background: transparent;
+    top: 50px;
+    left: 35px;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
 
     /* Leaderboard Screen */
     .leaderboard-page {
@@ -433,12 +433,18 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.3s ease-out;
+    pointer-events: none;
   }
 
   #leaderboard-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    transition: transform 0.3s ease-out 0.1s;
+    transform: translateY(20px);
   }
 
   #close-leaderboard {
@@ -452,6 +458,18 @@
     color: white;
     cursor: pointer;
   }
+
+  .help-screen.active, .leaderboard-page.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    display: flex;
+}
+.help-screen.active #help-img,
+.leaderboard-page.active #leaderboard-img {
+    transform: translateY(0);
+}
+
 
   </style>
 </head>
@@ -485,16 +503,15 @@
     <button onclick="closeCongratsPopup()">OK</button>
   </div>
 
-  <!-- Help Screen -->
-  <div id="help-screen">
-    <h2>How to Play</h2>
-    <p>Scream as loud as you can to help the mother deliver her baby! The louder you scream, the faster the baby will come out. Keep screaming until the baby is fully delivered!</p>
-    <button id="close-help" onclick="closeHelpScreen()">Got it!</button>
+   <!-- Help Screen -->
+  <div id="help-screen" class="help-screen">
+    <img id="help-img" src="HELP.png" alt="help img">
+    <button id="close-help" onclick="closeHelpScreen()"></button>
   </div>
 
   <!-- Leaderboard Screen -->
   <div id="leaderboard-page" class="leaderboard-page">
-    <img id="leaderboard-img" src="leaderboardPage.png" alt="Leaderboard">
+    <img id="leaderboard-img" src="LEADERBOARD_NoName.png" alt="Leaderboard">
     <button id="close-leaderboard" onclick="closeLeaderboard()"></button>
   </div>
 
@@ -522,6 +539,8 @@
     let gameStartTime = 0;
     let gameEndTime = 0;
 
+    
+    
     function preload() {
       soundFormats('mp3', 'ogg');
       bgMusic = loadSound('background.mp3', () => {}, () => {});
@@ -938,26 +957,36 @@
     }
 
     function showHelpScreen() {
-      document.getElementById('help-screen').style.display = 'flex';
-    }
+    const helpScreen = document.getElementById('help-screen');
+    helpScreen.style.display = 'flex';
+    setTimeout(() => {
+        helpScreen.classList.add('active');
+    }, 10);
+}
 
-    function closeHelpScreen() {
-      document.getElementById('help-screen').style.display = 'none';
-    }
+function closeHelpScreen() {
+    const helpScreen = document.getElementById('help-screen');
+    helpScreen.classList.remove('active');
+    setTimeout(() => {
+        helpScreen.style.display = 'none';
+    }, 300);
+}
 
-    function showLeaderboard() {
-      document.getElementById('start-screen').style.display = 'none';
-      document.getElementById('name-popup').style.display = 'none';
-      document.getElementById('home-btn').style.display = 'none';
-      document.getElementById('help-screen').style.display = 'none';
-      document.getElementById('congrats-popup').style.display = 'none';
-      document.getElementById('leaderboard-page').style.display = 'flex'; // Important: 'flex' not 'block'
-    }
+function showLeaderboard() {
+    const leaderboard = document.getElementById('leaderboard-page');
+    leaderboard.style.display = 'flex';
+    setTimeout(() => {
+        leaderboard.classList.add('active');
+    }, 10);
+}
 
-    function closeLeaderboard() {
-      document.getElementById('leaderboard-page').style.display = 'none';
-      document.getElementById('start-screen').style.display = 'flex';
-    }
+function closeLeaderboard() {
+    const leaderboard = document.getElementById('leaderboard-page');
+    leaderboard.classList.remove('active');
+    setTimeout(() => {
+        leaderboard.style.display = 'none';
+    }, 300);
+}
 
     function exitGame() {
       // In a real app, this might close the window or app
