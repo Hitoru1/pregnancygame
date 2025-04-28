@@ -127,6 +127,36 @@
    top: 75%;
    left: 68%;
  }
+
+ #mute-btn {
+    height: 30px;
+    width: 30px;
+    background: transparent;
+    position: absolute;
+    top: 4%;
+    left: 95%;
+    border: none;
+    color: white;
+    cursor: pointer;
+ }
+
+ #mute-btn::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 3px;
+  background: transparent;
+  transform: rotate(45deg);
+  position: absolute;
+  top: 50%;
+  left: 0;
+  pointer-events: none;
+}
+
+#mute-btn.muted::before {
+  background: red;
+}
+
     .home-button {
       position: absolute;
       top: 2vw;
@@ -505,6 +535,7 @@
     <button id="help-btn" class="menu-button" onclick="showHelpScreen()"></button>
     <button id="leaderboard-btn" class="menu-button" onclick="showLeaderboard()"></button>
     <button id="exit-btn" class="menu-button" onclick="exitGame()"></button>
+    <button id="mute-btn" onclick="muteMusic()"></button>
   </div>
 
   <!-- Name Input Popup -->
@@ -563,6 +594,7 @@
     let gameEndTime = 0;
     let rightLegImg, leftLegImg, tummyImg, blanketImg, babyImg, bgImg;
     let cryingBabySound;
+    let isMuted = false;
     
     function preload() {
   soundFormats('mp3', 'ogg');
@@ -877,6 +909,24 @@ let blanketHeight = blanketWidth * (blanketImg.height/blanketImg.width);
         gameStartTime = millis();
       }, 1000);
     }
+
+    function muteMusic() {
+        isMuted = !isMuted;
+
+        const muteButton = document.getElementById('mute-btn');
+
+        if (isMuted) {
+          if (introMusic && introMusic.isPlaying()) {
+            introMusic.setVolume(0);
+          }
+          muteButton.classList.add('muted');
+        } else {
+          if (introMusic && introMusic.isPlaying()) {
+            introMusic.setVolume(0.3); // Or whatever default volume you prefer
+          }
+          muteButton.classList.remove('muted');
+        }
+      }
 
     function goHome() {
       started = false;
