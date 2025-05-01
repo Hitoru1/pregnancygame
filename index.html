@@ -1297,7 +1297,7 @@
     if (!started) return;
 
     let vol = mic ? mic.getLevel() : 0;
-    let threshold = 1; //range level
+    let threshold = 0.50; //range level
     vol = lerp(lastVolume, vol, 0.3);
     lastVolume = vol;
 
