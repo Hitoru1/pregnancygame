@@ -638,7 +638,7 @@
 
 
     /* Animation classes */
-    .leaderboard-page.active {
+    .help-screen.active,.leaderboard-page.active {
       opacity: 1;
       transform: scale(1);
       pointer-events: auto;
@@ -1803,9 +1803,45 @@
     function adjustButtonPositions() {
       // These values should be adjusted based on your start_screen_new.png layout
       if (windowWidth > windowHeight) {
-        /* Existing landscape adjustments */
+        document.getElementById('start-btn').style.width = '38%';
+        document.getElementById('start-btn').style.height = '30%';
+        document.getElementById('start-btn').style.top = '4%';
+        document.getElementById('start-btn').style.left = '1%';
+        
+        document.getElementById('help-btn').style.width = '15%';
+        document.getElementById('help-btn').style.height = '10%';
+        document.getElementById('help-btn').style.top = '42%';
+        document.getElementById('help-btn').style.left = '10%';
+        
+        document.getElementById('leaderboard-btn').style.width = '25%';
+        document.getElementById('leaderboard-btn').style.height = '10%';
+        document.getElementById('leaderboard-btn').style.top = '54%';
+        document.getElementById('leaderboard-btn').style.left = '10%';
+        
+        document.getElementById('exit-btn').style.width = '15%';
+        document.getElementById('exit-btn').style.height = '10%';
+        document.getElementById('exit-btn').style.top = '68%';
+        document.getElementById('exit-btn').style.left = '10%';
       } else {
-        /* Existing portrait adjustments */
+        document.getElementById('start-btn').style.width = '40%';
+        document.getElementById('start-btn').style.height = '8%';
+        document.getElementById('start-btn').style.top = '30%';
+        document.getElementById('start-btn').style.left = '30%';
+        
+        document.getElementById('help-btn').style.width = '40%';
+        document.getElementById('help-btn').style.height = '8%';
+        document.getElementById('help-btn').style.top = '40%';
+        document.getElementById('help-btn').style.left = '30%';
+        
+        document.getElementById('leaderboard-btn').style.width = '40%';
+        document.getElementById('leaderboard-btn').style.height = '8%';
+        document.getElementById('leaderboard-btn').style.top = '50%';
+        document.getElementById('leaderboard-btn').style.left = '30%';
+        
+        document.getElementById('exit-btn').style.width = '40%';
+        document.getElementById('exit-btn').style.height = '8%';
+        document.getElementById('exit-btn').style.top = '60%';
+        document.getElementById('exit-btn').style.left = '30%';
       }
       console.log("Button positions adjusted");
     }
