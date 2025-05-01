@@ -153,7 +153,7 @@
       background: red;
     }
 
-    /*.home-button {
+    .home-button {
       position: absolute;
       top: 2vw;
       right: 2vw;
@@ -638,7 +638,7 @@
 
 
     /* Animation classes */
-    .help-screen.active,.leaderboard-page.active {
+    .leaderboard-page.active {
       opacity: 1;
       transform: scale(1);
       pointer-events: auto;
@@ -926,16 +926,16 @@
     <button id="continue-btn" onclick="startGame()">Continue</button>
   </div>
 
-  <button class="home-button" id="game-home-btn" onclick="goHome()"></button>
+  <button class="home-button" id="game-home-btn" onclick="goHome()">🏠 Home</button>
   <button class="back-button" id="podium-back-btn" onclick="closePodiumLeaderboard()">←</button>
   <button class="back-button" id="full-list-back-btn" onclick="closeFullLeaderboardList()">←</button>
 
   <div id="congrats-popup">
-    <img src="logo.png" alt="Baby GIF">
     <h2>Congratulations!</h2>
     <p id="congrats-message"></p>
+    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExc3Y4cWY1bG5mZ2V6d3I0aHh2d3VrY2NlZ3F2eGJtYjR0eGJ4eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmc3Q9Zw/3o7TKMt1VNMZRZo0e4/giphy.gif" alt="Baby GIF">
     <div class="popup-buttons">
-    <button onclick="closeCongratsPopup()">OK</button>
+      <button onclick="closeCongratsPopup()">OK</button>
     </div>
   </div>
 
@@ -1179,7 +1179,7 @@
     // Game Variables
     let mic, started = false;
     let screamPower = 0;
-    let screamGoal = 20;
+    let screamGoal = 10;
     let babyDelivered = false;
     let babyY = 0;
     let babyRiseSpeed = 30;
@@ -1420,58 +1420,45 @@
         blanketWidth,
         blanketHeight);
 
- // Baby delivery logic
- if (screamPower >= screamGoal) {
-    if (!babyDelivered) { // Check if this is the first frame of delivery
-      babyDelivered = true; // Baby is now considered delivered
-      gameEndTime = millis();
-      timeTaken = ((gameEndTime - gameStartTime) / 1000).toFixed(1);
-      saveScore();
-
-      // --- START: New Crying Sound Logic ---
-      // Play crying sound ONLY when baby is first delivered
-      if (cryingBabySound && !cryingBabySound.isPlaying()) {
-          cryingBabySound.loop(); // Use .play() if you only want it once, .loop() to repeat
-          cryingBabySound.setVolume(isMuted ? 0 : 0.5); // Respect mute setting
-          console.log("Baby delivered - Playing crying sound."); // Optional debug message
+    // Baby delivery logic
+    if (screamPower >= screamGoal) {
+      if (!babyDelivered) {
+          babyDelivered = true;
+          gameEndTime = millis();
+          timeTaken = ((gameEndTime - gameStartTime) / 1000).toFixed(1);
+          saveScore();
       }
-      // --- END: New Crying Sound Logic ---
+
+      babyProgress = min(babyProgress + 0.01, 1);
+
+      let finalBabyBaseY = tummyTopY - babyHeight * 0.8;
+
+      if (babyProgress >= 1) {
+        babyBounce += 0.1 * babyBounceDirection;
+        if (abs(babyBounce) > 5) babyBounceDirection *= -1;
+      }
+
+
+      image(babyImg,
+            width/2 - babyWidth/2,
+            finalBabyBaseY + babyBounce,
+            babyWidth,
+            babyHeight);
+
+
+      if (!confettiPlayed && babyProgress > 0.5) {
+        launchConfetti();
+        confettiPlayed = true;
+      }
+
+      if (!congratsShown && babyProgress >= 1) {
+        showCongratsPopup();
+        congratsShown = true;
+      }
     }
-
-    // (Rest of the delivery logic: babyProgress calculation, image drawing, confetti, congrats popup)
-    babyProgress = min(babyProgress + 0.01, 1);
-
-    let finalBabyBaseY = tummyTopY - babyHeight * 0.8;
-
-    if (babyProgress >= 1) {
-      babyBounce += 0.1 * babyBounceDirection;
-      if (abs(babyBounce) > 5) babyBounceDirection *= -1;
-    }
-
-    image(babyImg,
-          width/2 - babyWidth/2,
-          finalBabyBaseY + babyBounce,
-          babyWidth,
-          babyHeight);
-
-    if (!confettiPlayed && babyProgress > 0.5) {
-      launchConfetti();
-      confettiPlayed = true;
-    }
-
-    if (!congratsShown && babyProgress >= 1) {
-      showCongratsPopup();
-      congratsShown = true;
-    }
-     // End of if (screamPower >= screamGoal)
-
-  // No 'else' block needed here specifically for stopping the sound,
-  // as it's handled by muteMusic() and goHome().
-
-} // End of draw() function
 
       // Crying sound logic (plays if game started and baby not delivered)
-      /*if (started && !babyDelivered) {
+      if (started && !babyDelivered) {
           if (cryingBabySound && !cryingBabySound.isPlaying()) {
               cryingBabySound.loop();
               cryingBabySound.setVolume(isMuted ? 0 : 0.5);
@@ -1480,7 +1467,7 @@
           if (cryingBabySound && cryingBabySound.isPlaying()) {
               cryingBabySound.stop();
           }
-      }*/
+      }
  }
 
     function launchConfetti() {
@@ -1816,45 +1803,9 @@
     function adjustButtonPositions() {
       // These values should be adjusted based on your start_screen_new.png layout
       if (windowWidth > windowHeight) {
-        document.getElementById('start-btn').style.width = '38%';
-        document.getElementById('start-btn').style.height = '30%';
-        document.getElementById('start-btn').style.top = '4%';
-        document.getElementById('start-btn').style.left = '1%';
-        
-        document.getElementById('help-btn').style.width = '15%';
-        document.getElementById('help-btn').style.height = '10%';
-        document.getElementById('help-btn').style.top = '42%';
-        document.getElementById('help-btn').style.left = '10%';
-        
-        document.getElementById('leaderboard-btn').style.width = '25%';
-        document.getElementById('leaderboard-btn').style.height = '10%';
-        document.getElementById('leaderboard-btn').style.top = '54%';
-        document.getElementById('leaderboard-btn').style.left = '10%';
-        
-        document.getElementById('exit-btn').style.width = '15%';
-        document.getElementById('exit-btn').style.height = '10%';
-        document.getElementById('exit-btn').style.top = '68%';
-        document.getElementById('exit-btn').style.left = '10%';
+        /* Existing landscape adjustments */
       } else {
-        document.getElementById('start-btn').style.width = '40%';
-        document.getElementById('start-btn').style.height = '8%';
-        document.getElementById('start-btn').style.top = '30%';
-        document.getElementById('start-btn').style.left = '30%';
-        
-        document.getElementById('help-btn').style.width = '40%';
-        document.getElementById('help-btn').style.height = '8%';
-        document.getElementById('help-btn').style.top = '40%';
-        document.getElementById('help-btn').style.left = '30%';
-        
-        document.getElementById('leaderboard-btn').style.width = '40%';
-        document.getElementById('leaderboard-btn').style.height = '8%';
-        document.getElementById('leaderboard-btn').style.top = '50%';
-        document.getElementById('leaderboard-btn').style.left = '30%';
-        
-        document.getElementById('exit-btn').style.width = '40%';
-        document.getElementById('exit-btn').style.height = '8%';
-        document.getElementById('exit-btn').style.top = '60%';
-        document.getElementById('exit-btn').style.left = '30%';
+        /* Existing portrait adjustments */
       }
       console.log("Button positions adjusted");
     }
