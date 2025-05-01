@@ -1179,10 +1179,10 @@
     // Game Variables
     let mic, started = false;
     let screamPower = 0;
-    let screamGoal = 8;
+    let screamGoal = 10;
     let babyDelivered = false;
     let babyY = 0;
-    let babyRiseSpeed = 1.5;
+    let babyRiseSpeed = 30;
 
     let bgMusic, introMusic;
     let confettiPlayed = false;
@@ -1297,7 +1297,7 @@
     if (!started) return;
 
     let vol = mic ? mic.getLevel() : 0;
-    let threshold = 0.30;
+    let threshold = 0.50; //range level
     vol = lerp(lastVolume, vol, 0.3);
     lastVolume = vol;
 
